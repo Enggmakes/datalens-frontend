@@ -48,14 +48,14 @@ export default function FileUpload({ onUploadSuccess }) {
       <div
         {...getRootProps()}
         style={{
-          border: `2px dashed ${isDragActive ? 'var(--primary)' : 'var(--shadow-dark)'}`,
+          border: `2px dashed ${isDragActive ? 'var(--primary)' : 'var(--border)'}`,
           borderRadius: 'var(--radius-xl)',
           padding: '3rem 2rem',
           textAlign: 'center',
           cursor: uploading ? 'wait' : 'pointer',
-          background: isDragActive ? 'rgba(74,127,212,0.05)' : 'var(--bg-card)',
+          background: isDragActive ? 'rgba(59,130,246,0.05)' : 'var(--bg-card)',
           transition: 'all var(--transition)',
-          boxShadow: isDragActive ? 'var(--nm-raised-lg)' : 'var(--nm-raised)',
+          boxShadow: isDragActive ? 'var(--shadow-glow)' : 'var(--shadow-md)',
         }}
       >
         <input {...getInputProps()} id="file-upload-input" />
@@ -63,10 +63,10 @@ export default function FileUpload({ onUploadSuccess }) {
         <div style={{
           width: 80, height: 80, margin: '0 auto 1.5rem',
           borderRadius: 'var(--radius-lg)',
-          background: isDragActive ? 'var(--gradient-primary)' : 'var(--bg-surface)',
+          background: isDragActive ? 'var(--gradient-primary)' : 'var(--bg-elevated)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all var(--transition)',
-          boxShadow: isDragActive ? 'var(--nm-raised)' : 'var(--nm-inset)',
+          border: '1px solid var(--border)',
         }}>
           <Upload size={36} color={isDragActive ? '#fff' : 'var(--primary)'} />
         </div>
@@ -76,7 +76,7 @@ export default function FileUpload({ onUploadSuccess }) {
             <p style={{ fontFamily: 'Fira Code', fontSize: '1rem', color: 'var(--primary)', marginBottom: '1rem' }}>
               Analysing your data...
             </p>
-            <div style={{ background: 'var(--bg-surface)', borderRadius: 100, height: 6, overflow: 'hidden', maxWidth: 320, margin: '0 auto', boxShadow: 'var(--nm-inset-sm)' }}>
+            <div style={{ background: 'var(--bg-elevated)', borderRadius: 100, height: 6, overflow: 'hidden', maxWidth: 320, margin: '0 auto' }}>
               <div style={{
                 height: '100%',
                 width: `${progress}%`,
