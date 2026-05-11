@@ -8,12 +8,18 @@ import {
 import { getChartData } from '../api';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
-const COLORS = ['#3B82F6', '#8B5CF6', '#10B981', '#F97316', '#EF4444', '#06B6D4', '#F59E0B', '#EC4899', '#84CC16', '#A78BFA'];
+const COLORS = ['#4a7fd4', '#7c6fd4', '#3aab74', '#e07b39', '#d44a4a', '#39a8c8', '#e0a439', '#c45dab', '#6ab04c', '#9b59b6'];
+
+// Only render pie label if slice is big enough to avoid overlap
+const renderPieLabel = ({ name, percent }) => {
+  if (percent < 0.04) return null; // skip labels for slices < 4%
+  return `${name} (${(percent * 100).toFixed(0)}%)`;
+};
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="custom-tooltip" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-hover)', borderRadius: 'var(--radius-sm)', padding: '0.5rem 0.75rem' }}>
+    <div className="custom-tooltip" style={{ background: 'var(--bg-elevated)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '0.5rem 0.75rem' }}>
       {label !== undefined && <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: 4 }}>{String(label)}</p>}
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color, fontSize: '0.8rem', fontFamily: 'Fira Code', margin: 0 }}>
@@ -169,7 +175,8 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
     margin: { top: 10, right: 20, left: 0, bottom: 30 },
   };
 
-  const axisStyle = { fill: 'var(--text-muted)', fontSize: 11, fontFamily: 'Fira Code' };
+  const axisStyle = { fill: 'var(--text-secondary)', fontSize: 11, fontFamily: 'Fira Code' };
+  const gridColor = 'rgba(184,195,208,0.5)';
 
   if (config.type === 'heatmap') {
     return <HeatmapChart data={data} />;
@@ -180,20 +187,20 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={320}>
+    <ResponsiveContainer width="100%" height={340}>
       {config.type === 'bar' ? (
         <BarChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
           <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={0} />
           <YAxis tick={axisStyle} />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey={yKey} radius={[4, 4, 0, 0]} fill="url(#barGrad)" maxBarSize={60}>
+          <Bar dataKey={yKey} radius={[4, 4, 0, 0]} maxBarSize={60}>
             {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
           </Bar>
         </BarChart>
       ) : config.type === 'line' ? (
         <LineChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
           <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={Math.floor(data.length / 8)} />
           <YAxis tick={axisStyle} />
           <Tooltip content={<CustomTooltip />} />
@@ -204,11 +211,11 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
         <AreaChart {...commonProps}>
           <defs>
             <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+              <stop offset="5%" stopColor="#4a7fd4" stopOpacity={0.35} />
+              <stop offset="95%" stopColor="#4a7fd4" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
           <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={Math.floor(data.length / 8)} />
           <YAxis tick={axisStyle} />
           <Tooltip content={<CustomTooltip />} />
@@ -216,27 +223,38 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
         </AreaChart>
       ) : config.type === 'scatter' ? (
         <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
           <XAxis dataKey={xKey} type="number" name={xKey} tick={axisStyle} />
           <YAxis dataKey={yKey} type="number" name={yKey} tick={axisStyle} />
           <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
           <Scatter data={data} fill="var(--primary)" fillOpacity={0.7} />
         </ScatterChart>
       ) : config.type === 'pie' ? (
-        <PieChart>
-          <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`} labelLine={{ stroke: 'var(--text-muted)' }}>
-            {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="var(--bg-card)" strokeWidth={2} />)}
+        <PieChart margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={110}
+            label={renderPieLabel}
+            labelLine={({ percent }) => percent >= 0.04}
+          >
+            {data.map((_, i) => (
+              <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="var(--bg-card)" strokeWidth={2} />
+            ))}
           </Pie>
-          <Tooltip formatter={(v) => v.toLocaleString()} />
+          <Tooltip formatter={(v, name) => [v.toLocaleString(), name]} />
           <Legend formatter={(v) => <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{v}</span>} />
         </PieChart>
       ) : config.type === 'histogram' ? (
         <BarChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
           <XAxis dataKey="bin" tick={{ ...axisStyle, fontSize: 9 }} angle={-45} textAnchor="end" interval={Math.floor(data.length / 6)} />
           <YAxis tick={axisStyle} />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="count" fill="var(--primary)" fillOpacity={0.8} radius={[2, 2, 0, 0]} />
+          <Bar dataKey="count" fill="var(--primary)" fillOpacity={0.85} radius={[2, 2, 0, 0]} />
         </BarChart>
       ) : null}
     </ResponsiveContainer>
