@@ -8,13 +8,7 @@ import {
 import { getChartData } from '../api';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
-const COLORS = ['#4a7fd4', '#7c6fd4', '#3aab74', '#e07b39', '#d44a4a', '#39a8c8', '#e0a439', '#c45dab', '#6ab04c', '#9b59b6'];
-
-// Only show pie label when slice is large enough — prevents crowding
-const renderPieLabel = ({ name, percent }) => {
-  if (percent < 0.04) return null;
-  return `${name} (${(percent * 100).toFixed(0)}%)`;
-};
+const COLORS = ['#3B82F6', '#8B5CF6', '#10B981', '#F97316', '#EF4444', '#06B6D4', '#F59E0B', '#EC4899', '#84CC16', '#A78BFA'];
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -175,8 +169,7 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
     margin: { top: 10, right: 20, left: 0, bottom: 30 },
   };
 
-  const axisStyle = { fill: 'var(--text-secondary)', fontSize: 11, fontFamily: 'Fira Code' };
-  const gridColor = 'rgba(184,195,208,0.5)';
+  const axisStyle = { fill: 'var(--text-muted)', fontSize: 11, fontFamily: 'Fira Code' };
 
   if (config.type === 'heatmap') {
     return <HeatmapChart data={data} />;
@@ -190,17 +183,17 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
     <ResponsiveContainer width="100%" height={320}>
       {config.type === 'bar' ? (
         <BarChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
           <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={0} />
           <YAxis tick={axisStyle} />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey={yKey} radius={[4, 4, 0, 0]} maxBarSize={60}>
+          <Bar dataKey={yKey} radius={[4, 4, 0, 0]} fill="url(#barGrad)" maxBarSize={60}>
             {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
           </Bar>
         </BarChart>
       ) : config.type === 'line' ? (
         <LineChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
           <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={Math.floor(data.length / 8)} />
           <YAxis tick={axisStyle} />
           <Tooltip content={<CustomTooltip />} />
@@ -215,7 +208,7 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
               <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
           <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={Math.floor(data.length / 8)} />
           <YAxis tick={axisStyle} />
           <Tooltip content={<CustomTooltip />} />
@@ -223,7 +216,7 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
         </AreaChart>
       ) : config.type === 'scatter' ? (
         <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
           <XAxis dataKey={xKey} type="number" name={xKey} tick={axisStyle} />
           <YAxis dataKey={yKey} type="number" name={yKey} tick={axisStyle} />
           <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
@@ -231,15 +224,7 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
         </ScatterChart>
       ) : config.type === 'pie' ? (
         <PieChart>
-          <Pie
-            data={data}
-            dataKey="value"
-            nameKey="name"
-            cx="50%" cy="50%"
-            outerRadius={110}
-            label={renderPieLabel}
-            labelLine={({ percent }) => percent >= 0.04}
-          >
+          <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`} labelLine={{ stroke: 'var(--text-muted)' }}>
             {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="var(--bg-card)" strokeWidth={2} />)}
           </Pie>
           <Tooltip formatter={(v) => v.toLocaleString()} />
@@ -247,7 +232,7 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
         </PieChart>
       ) : config.type === 'histogram' ? (
         <BarChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
           <XAxis dataKey="bin" tick={{ ...axisStyle, fontSize: 9 }} angle={-45} textAnchor="end" interval={Math.floor(data.length / 6)} />
           <YAxis tick={axisStyle} />
           <Tooltip content={<CustomTooltip />} />

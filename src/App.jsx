@@ -7,8 +7,9 @@ function Navbar() {
   return (
     <nav style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-      background: 'var(--bg-card)',
-      boxShadow: '0 4px 16px var(--shadow-dark), 0 -2px 8px var(--shadow-light)',
+      background: 'rgba(10,15,30,0.85)',
+      backdropFilter: 'blur(16px)',
+      borderBottom: '1px solid var(--border)',
       padding: '0 2rem',
       height: 60,
       display: 'flex', alignItems: 'center', gap: '1rem',
@@ -101,7 +102,13 @@ export default function App() {
     <>
       <Navbar />
       <main style={{ paddingTop: 60, minHeight: '100vh', background: 'var(--bg-base)' }}>
-        <div style={{ minHeight: analysisData ? 0 : '100vh' }}>
+        <div style={{ background: 'var(--gradient-hero)', minHeight: analysisData ? 0 : '100vh' }}>
+          {/* Grid background pattern */}
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(59,130,246,0.08) 1px, transparent 0)',
+            backgroundSize: '32px 32px',
+          }} />
 
           <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 1.5rem', position: 'relative', zIndex: 1 }}>
             {!analysisData && !showUpload && (
