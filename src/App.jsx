@@ -145,7 +145,7 @@ export default function App() {
 
             {analysisData && (
               <div style={{ paddingTop: '1.5rem', paddingBottom: '3rem' }} className="fade-in">
-                <Dashboard analysisData={analysisData} onReset={handleReset} />
+                <Dashboard analysisData={analysisData} onReset={handleReset} onDataCleaned={setAnalysisData} />
               </div>
             )}
           </div>

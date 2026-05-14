@@ -6,10 +6,12 @@ import CustomChartBuilder from './CustomChartBuilder';
 import DataPreview from './DataPreview';
 import DataSummaryBar from './DataSummaryBar';
 import DataChat from './DataChat';
-import { LayoutDashboard, BarChart2, Sliders, Table2, TrendingUp, Bot } from 'lucide-react';
+import DataCleaning from './DataCleaning';
+import { LayoutDashboard, BarChart2, Sliders, Table2, TrendingUp, Bot, Droplet } from 'lucide-react';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'clean', label: 'Data Cleaning', icon: Droplet },
   { id: 'chat', label: 'AI Chat', icon: Bot },
   { id: 'charts', label: 'AI Charts', icon: BarChart2 },
   { id: 'custom', label: 'Custom Builder', icon: Sliders },
@@ -50,7 +52,7 @@ function CorrelationBadge({ col1, col2, val }) {
   );
 }
 
-export default function Dashboard({ analysisData, onReset }) {
+export default function Dashboard({ analysisData, onReset, onDataCleaned }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedSuggestionIdx, setSelectedSuggestionIdx] = useState(0);
   const [activeSuggestion, setActiveSuggestion] = useState(analysisData.chart_suggestions[0] || null);
@@ -144,6 +146,21 @@ export default function Dashboard({ analysisData, onReset }) {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* DATA CLEANING TAB */}
+      {activeTab === 'clean' && (
+        <div className="card fade-in">
+          <DataCleaning 
+            sessionId={session_id} 
+            columns={columns} 
+            statistics={statistics} 
+            onDataCleaned={(newData) => {
+              onDataCleaned(newData);
+              setActiveTab('overview');
+            }} 
+          />
         </div>
       )}
 

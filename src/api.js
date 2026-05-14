@@ -36,3 +36,11 @@ export const getCustomChartData = async (sessionId, chartType, xCol, yCol, aggre
   });
   return res.data;
 };
+
+export const cleanData = async (sessionId, operations) => {
+  const res = await api.post('/api/clean-data', {
+    session_id: sessionId,
+    operations,
+  });
+  return res.data;
+};
