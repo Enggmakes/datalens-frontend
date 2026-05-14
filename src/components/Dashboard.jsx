@@ -83,7 +83,7 @@ export default function Dashboard({ analysisData, onReset, onDataCleaned }) {
     <div className="fade-in">
       <DataSummaryBar
         filename={filename} rows={rows} columns={columns}
-        colTypes={col_types} domain={domain} onReset={onReset}
+        colTypes={col_types} domain={domain} onReset={onReset} sessionId={session_id}
       />
 
       {/* Tabs */}
