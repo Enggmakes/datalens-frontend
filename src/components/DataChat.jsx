@@ -39,7 +39,7 @@ const DataChat = ({ sessionId }) => {
     setIsLoading(true);
 
     try {
-      const res = await axios.post(`${BASE_URL}/chat`, {
+      const res = await axios.post(`${BASE_URL}/api/chat`, {
         session_id: sessionId,
         message: userMsg,
         api_key: apiKey.trim()
