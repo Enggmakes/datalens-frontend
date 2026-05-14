@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   BarChart, Bar, LineChart, Line, ScatterChart, Scatter,
   PieChart, Pie, Cell, AreaChart, Area,
@@ -6,7 +6,8 @@ import {
   ResponsiveContainer, Label
 } from 'recharts';
 import { getChartData } from '../api';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 const COLORS = ['#3B82F6', '#8B5CF6', '#10B981', '#F97316', '#EF4444', '#06B6D4', '#F59E0B', '#EC4899', '#84CC16', '#A78BFA'];
 
@@ -123,8 +124,27 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const chartRef = useRef(null);
 
   const config = customConfig || suggestion;
+
+  const handleDownloadChart = async () => {
+    if (!chartRef.current) return;
+    try {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const canvas = await html2canvas(chartRef.current, {
+        backgroundColor: isDark ? '#111111' : '#FFD6A6',
+        scale: 2, // High resolution
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `${config.title || 'chart'}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Failed to download chart', err);
+    }
+  };
 
   useEffect(() => {
     if (!config || !sessionId) return;
@@ -171,74 +191,90 @@ export default function ChartRenderer({ suggestion, sessionId, customConfig }) {
 
   const axisStyle = { fill: 'var(--text-muted)', fontSize: 11, fontFamily: 'Fira Code' };
 
-  if (config.type === 'heatmap') {
-    return <HeatmapChart data={data} />;
-  }
+  let chartContent = null;
 
-  if (config.type === 'box') {
-    return <BoxPlotChart data={data} />;
+  if (config.type === 'heatmap') {
+    chartContent = <HeatmapChart data={data} />;
+  } else if (config.type === 'box') {
+    chartContent = <BoxPlotChart data={data} />;
+  } else {
+    chartContent = (
+      <ResponsiveContainer width="100%" height={320}>
+        {config.type === 'bar' ? (
+          <BarChart {...commonProps}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={0} />
+            <YAxis tick={axisStyle} />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar dataKey={yKey} radius={[4, 4, 0, 0]} fill="url(#barGrad)" maxBarSize={60}>
+              {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+            </Bar>
+          </BarChart>
+        ) : config.type === 'line' ? (
+          <LineChart {...commonProps}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={Math.floor(data.length / 8)} />
+            <YAxis tick={axisStyle} />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend />
+            <Line type="monotone" dataKey={yKey} stroke="var(--primary)" strokeWidth={2} dot={false} activeDot={{ r: 6, fill: 'var(--primary)' }} />
+          </LineChart>
+        ) : config.type === 'area' ? (
+          <AreaChart {...commonProps}>
+            <defs>
+              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={Math.floor(data.length / 8)} />
+            <YAxis tick={axisStyle} />
+            <Tooltip content={<CustomTooltip />} />
+            <Area type="monotone" dataKey={yKey} stroke="var(--primary)" fill="url(#areaGrad)" strokeWidth={2} dot={false} />
+          </AreaChart>
+        ) : config.type === 'scatter' ? (
+          <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey={xKey} type="number" name={xKey} tick={axisStyle} />
+            <YAxis dataKey={yKey} type="number" name={yKey} tick={axisStyle} />
+            <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
+            <Scatter data={data} fill="var(--primary)" fillOpacity={0.7} />
+          </ScatterChart>
+        ) : config.type === 'pie' ? (
+          <PieChart>
+            <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`} labelLine={{ stroke: 'var(--text-muted)' }}>
+              {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="var(--bg-card)" strokeWidth={2} />)}
+            </Pie>
+            <Tooltip formatter={(v) => v.toLocaleString()} />
+            <Legend formatter={(v) => <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{v}</span>} />
+          </PieChart>
+        ) : config.type === 'histogram' ? (
+          <BarChart {...commonProps}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey="bin" tick={{ ...axisStyle, fontSize: 9 }} angle={-45} textAnchor="end" interval={Math.floor(data.length / 6)} />
+            <YAxis tick={axisStyle} />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar dataKey="count" fill="var(--primary)" fillOpacity={0.8} radius={[2, 2, 0, 0]} />
+          </BarChart>
+        ) : null}
+      </ResponsiveContainer>
+    );
   }
 
   return (
-    <ResponsiveContainer width="100%" height={320}>
-      {config.type === 'bar' ? (
-        <BarChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-          <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={0} />
-          <YAxis tick={axisStyle} />
-          <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey={yKey} radius={[4, 4, 0, 0]} fill="url(#barGrad)" maxBarSize={60}>
-            {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-          </Bar>
-        </BarChart>
-      ) : config.type === 'line' ? (
-        <LineChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-          <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={Math.floor(data.length / 8)} />
-          <YAxis tick={axisStyle} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
-          <Line type="monotone" dataKey={yKey} stroke="var(--primary)" strokeWidth={2} dot={false} activeDot={{ r: 6, fill: 'var(--primary)' }} />
-        </LineChart>
-      ) : config.type === 'area' ? (
-        <AreaChart {...commonProps}>
-          <defs>
-            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-          <XAxis dataKey={xKey} tick={axisStyle} angle={-30} textAnchor="end" interval={Math.floor(data.length / 8)} />
-          <YAxis tick={axisStyle} />
-          <Tooltip content={<CustomTooltip />} />
-          <Area type="monotone" dataKey={yKey} stroke="var(--primary)" fill="url(#areaGrad)" strokeWidth={2} dot={false} />
-        </AreaChart>
-      ) : config.type === 'scatter' ? (
-        <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-          <XAxis dataKey={xKey} type="number" name={xKey} tick={axisStyle} />
-          <YAxis dataKey={yKey} type="number" name={yKey} tick={axisStyle} />
-          <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
-          <Scatter data={data} fill="var(--primary)" fillOpacity={0.7} />
-        </ScatterChart>
-      ) : config.type === 'pie' ? (
-        <PieChart>
-          <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`} labelLine={{ stroke: 'var(--text-muted)' }}>
-            {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="var(--bg-card)" strokeWidth={2} />)}
-          </Pie>
-          <Tooltip formatter={(v) => v.toLocaleString()} />
-          <Legend formatter={(v) => <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{v}</span>} />
-        </PieChart>
-      ) : config.type === 'histogram' ? (
-        <BarChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-          <XAxis dataKey="bin" tick={{ ...axisStyle, fontSize: 9 }} angle={-45} textAnchor="end" interval={Math.floor(data.length / 6)} />
-          <YAxis tick={axisStyle} />
-          <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="count" fill="var(--primary)" fillOpacity={0.8} radius={[2, 2, 0, 0]} />
-        </BarChart>
-      ) : null}
-    </ResponsiveContainer>
+    <div style={{ position: 'relative' }}>
+      <button 
+        onClick={handleDownloadChart}
+        className="btn btn-ghost"
+        style={{ position: 'absolute', top: -35, right: 0, padding: '0.2rem 0.6rem', fontSize: '0.75rem', zIndex: 10 }}
+        title="Download Chart as PNG"
+      >
+        <Download size={14} /> PNG
+      </button>
+      <div ref={chartRef} style={{ background: 'var(--bg-card)', padding: '1rem', borderRadius: '8px' }}>
+        {chartContent}
+      </div>
+    </div>
   );
 }

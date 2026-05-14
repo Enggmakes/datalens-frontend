@@ -44,3 +44,7 @@ export const cleanData = async (sessionId, operations) => {
   });
   return res.data;
 };
+
+export const getDownloadUrl = (sessionId) => {
+  return `${BASE_URL}/api/download?session_id=${sessionId}`;
+};

@@ -1,5 +1,6 @@
 import React from 'react';
-import { FileSpreadsheet, Database, Hash, Sigma, Type, Calendar, Activity } from 'lucide-react';
+import { FileSpreadsheet, Database, Hash, Sigma, Type, Calendar, Activity, Download } from 'lucide-react';
+import { getDownloadUrl } from '../api';
 
 const DOMAIN_COLORS = {
   Healthcare: 'badge-green',
@@ -11,7 +12,7 @@ const DOMAIN_COLORS = {
   General: 'badge-purple',
 };
 
-export default function DataSummaryBar({ filename, rows, columns, colTypes, domain, onReset }) {
+export default function DataSummaryBar({ filename, rows, columns, colTypes, domain, onReset, sessionId }) {
   const numericCount = Object.values(colTypes).filter(t => t === 'numeric').length;
   const categoricalCount = Object.values(colTypes).filter(t => t === 'categorical').length;
   const datetimeCount = Object.values(colTypes).filter(t => t === 'datetime').length;
@@ -50,9 +51,19 @@ export default function DataSummaryBar({ filename, rows, columns, colTypes, doma
         {datetimeCount > 0 && <Stat icon={Calendar} label="Datetime" value={datetimeCount} color="var(--info)" />}
       </div>
 
-      <button className="btn btn-ghost" onClick={onReset} id="reset-upload-btn" style={{ flexShrink: 0 }}>
-        Upload New File
-      </button>
+      <div style={{ display: 'flex', gap: '0.75rem', flexShrink: 0 }}>
+        <a 
+          href={getDownloadUrl(sessionId)} 
+          className="btn btn-primary" 
+          download 
+          title="Download dataset as CSV"
+        >
+          <Download size={16} /> Download CSV
+        </a>
+        <button className="btn btn-ghost" onClick={onReset} id="reset-upload-btn">
+          Upload New File
+        </button>
+      </div>
     </div>
   );
 }
