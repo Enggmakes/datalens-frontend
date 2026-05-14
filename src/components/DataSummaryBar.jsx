@@ -1,6 +1,6 @@
-import React from 'react';
-import { FileSpreadsheet, Database, Hash, Sigma, Type, Calendar, Activity, Download } from 'lucide-react';
+import { FileSpreadsheet, Database, Hash, Sigma, Type, Calendar, Activity, Download, Loader2 } from 'lucide-react';
 import { getDownloadUrl } from '../api';
+import { useState } from 'react';
 
 const DOMAIN_COLORS = {
   Healthcare: 'badge-green',
@@ -13,6 +13,31 @@ const DOMAIN_COLORS = {
 };
 
 export default function DataSummaryBar({ filename, rows, columns, colTypes, domain, onReset, sessionId }) {
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (!sessionId) return;
+    setIsDownloading(true);
+    try {
+      const response = await fetch(getDownloadUrl(sessionId));
+      if (!response.ok) throw new Error('Download failed');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `datalens_${filename || 'export'}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Download error:', err);
+      alert('Failed to download file. Please try uploading again.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const numericCount = Object.values(colTypes).filter(t => t === 'numeric').length;
   const categoricalCount = Object.values(colTypes).filter(t => t === 'categorical').length;
   const datetimeCount = Object.values(colTypes).filter(t => t === 'datetime').length;
@@ -52,14 +77,15 @@ export default function DataSummaryBar({ filename, rows, columns, colTypes, doma
       </div>
 
       <div style={{ display: 'flex', gap: '0.75rem', flexShrink: 0 }}>
-        <a 
-          href={getDownloadUrl(sessionId)} 
+        <button 
+          onClick={handleDownload}
           className="btn btn-primary" 
-          download 
+          disabled={isDownloading || !sessionId}
           title="Download dataset as CSV"
         >
-          <Download size={16} /> Download CSV
-        </a>
+          {isDownloading ? <Loader2 size={16} className="spin" /> : <Download size={16} />} 
+          Download CSV
+        </button>
         <button className="btn btn-ghost" onClick={onReset} id="reset-upload-btn">
           Upload New File
         </button>
