@@ -5,10 +5,12 @@ import StatisticsPanel from './StatisticsPanel';
 import CustomChartBuilder from './CustomChartBuilder';
 import DataPreview from './DataPreview';
 import DataSummaryBar from './DataSummaryBar';
-import { LayoutDashboard, BarChart2, Sliders, Table2, TrendingUp, Info } from 'lucide-react';
+import DataChat from './DataChat';
+import { LayoutDashboard, BarChart2, Sliders, Table2, TrendingUp, Bot } from 'lucide-react';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'chat', label: 'AI Chat', icon: Bot },
   { id: 'charts', label: 'AI Charts', icon: BarChart2 },
   { id: 'custom', label: 'Custom Builder', icon: Sliders },
   { id: 'stats', label: 'Statistics', icon: TrendingUp },
@@ -142,6 +144,13 @@ export default function Dashboard({ analysisData, onReset }) {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* AI CHAT TAB */}
+      {activeTab === 'chat' && (
+        <div className="fade-in">
+          <DataChat sessionId={session_id} />
         </div>
       )}
 
