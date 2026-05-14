@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FileUpload from './components/FileUpload';
 import Dashboard from './components/Dashboard';
-import { LayoutDashboard, BarChart2, Sliders, Table2, TrendingUp, Zap, Database, PieChart } from 'lucide-react';
+import { LayoutDashboard, BarChart2, Sliders, Table2, TrendingUp, Zap, Database, PieChart, Moon, Sun } from 'lucide-react';
 
-function Navbar() {
+function Navbar({ theme, toggleTheme }) {
   return (
     <nav style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-      background: 'rgba(10,15,30,0.85)',
+      background: theme === 'dark' ? 'rgba(10,15,30,0.85)' : 'rgba(255, 240, 190, 0.85)',
       backdropFilter: 'blur(16px)',
       borderBottom: '1px solid var(--border)',
       padding: '0 2rem',
@@ -24,7 +24,10 @@ function Navbar() {
         <span className="badge badge-blue" style={{ marginLeft: '0.25rem' }}>v1.0</span>
       </div>
       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Universal Analytics Platform</span>
+        <button className="btn btn-ghost" onClick={toggleTheme} style={{ padding: '0.5rem', border: 'none' }} title="Toggle Theme">
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.5rem' }}>Universal Analytics</span>
       </div>
     </nav>
   );
@@ -87,6 +90,16 @@ function HeroSection({ onGetStarted }) {
 export default function App() {
   const [analysisData, setAnalysisData] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   const handleUploadSuccess = (data) => {
     setAnalysisData(data);
@@ -100,13 +113,13 @@ export default function App() {
 
   return (
     <>
-      <Navbar />
+      <Navbar theme={theme} toggleTheme={toggleTheme} />
       <main style={{ paddingTop: 60, minHeight: '100vh', background: 'var(--bg-base)' }}>
         <div style={{ background: 'var(--gradient-hero)', minHeight: analysisData ? 0 : '100vh' }}>
           {/* Grid background pattern */}
           <div style={{
             position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(59,130,246,0.08) 1px, transparent 0)',
+            backgroundImage: 'var(--grid-pattern)',
             backgroundSize: '32px 32px',
           }} />
 

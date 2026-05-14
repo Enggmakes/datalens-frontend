@@ -7,24 +7,63 @@
 }
 
 :root {
-  --primary: #3B82F6;
-  --primary-light: #60A5FA;
-  --primary-dark: #1D4ED8;
-  --secondary: #8B5CF6;
-  --accent: #F97316;
+  /* User requested custom palette */
+  --primary: #FF9A86;
+  --primary-light: #FFB399;
+  --primary-dark: #E07D6C;
+  --secondary: #FFB399;
+  --accent: #FFD6A6;
   --success: #10B981;
   --warning: #F59E0B;
   --danger: #EF4444;
   --info: #06B6D4;
 
-  --bg-base: #0A0F1E;
-  --bg-surface: #111827;
-  --bg-card: #1A2235;
-  --bg-elevated: #1F2D44;
-  --bg-input: #151E30;
+  --bg-base: #FFF0BE;
+  --bg-surface: #FFD6A6;
+  --bg-card: #FFD6A6;
+  --bg-elevated: #FFB399;
+  --bg-input: #FFF0BE;
 
-  --border: rgba(59, 130, 246, 0.15);
-  --border-hover: rgba(59, 130, 246, 0.4);
+  --border: rgba(255, 154, 134, 0.4);
+  --border-hover: rgba(255, 154, 134, 0.8);
+
+  --text-primary: #333333;
+  --text-secondary: #555555;
+  --text-muted: #777777;
+
+  --gradient-primary: linear-gradient(135deg, #FF9A86 0%, #FFB399 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255,154,134,0.15) 0%, rgba(255,179,153,0.05) 100%);
+  --gradient-hero: linear-gradient(180deg, #FFD6A6 0%, #FFF0BE 100%);
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
+  --shadow-glow: 0 0 24px rgba(255,154,134,0.4);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --grid-pattern: radial-gradient(circle at 1px 1px, rgba(255,154,134,0.3) 1px, transparent 0);
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme='dark'] {
+  --primary: #3B82F6;
+  --primary-light: #60A5FA;
+  --primary-dark: #1D4ED8;
+  --secondary: #8B5CF6;
+  --accent: #F97316;
+  
+  --bg-base: #000000;
+  --bg-surface: #0A0A0A;
+  --bg-card: #111111;
+  --bg-elevated: #1A1A1A;
+  --bg-input: #000000;
+
+  --border: #333333;
+  --border-hover: #555555;
 
   --text-primary: #E2E8F0;
   --text-secondary: #94A3B8;
@@ -32,19 +71,14 @@
 
   --gradient-primary: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
   --gradient-card: linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(139,92,246,0.04) 100%);
-  --gradient-hero: linear-gradient(180deg, #0D1A35 0%, #0A0F1E 100%);
+  --gradient-hero: linear-gradient(180deg, #111111 0%, #000000 100%);
 
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
   --shadow-glow: 0 0 24px rgba(59,130,246,0.2);
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-
-  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --grid-pattern: radial-gradient(circle at 1px 1px, rgba(59,130,246,0.15) 1px, transparent 0);
 }
 
 html {
@@ -75,7 +109,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Utilities */
 .glass {
-  background: rgba(26, 34, 53, 0.8);
+  background: var(--bg-surface);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
@@ -181,11 +215,11 @@ h1, h2, h3, h4, h5, h6 {
   text-transform: uppercase;
 }
 
-.badge-blue { background: rgba(59,130,246,0.15); color: var(--primary-light); border: 1px solid rgba(59,130,246,0.3); }
+.badge-blue { background: rgba(59,130,246,0.15); color: #3B82F6; border: 1px solid rgba(59,130,246,0.3); }
 .badge-purple { background: rgba(139,92,246,0.15); color: #A78BFA; border: 1px solid rgba(139,92,246,0.3); }
-.badge-green { background: rgba(16,185,129,0.15); color: #34D399; border: 1px solid rgba(16,185,129,0.3); }
-.badge-orange { background: rgba(249,115,22,0.15); color: #FB923C; border: 1px solid rgba(249,115,22,0.3); }
-.badge-cyan { background: rgba(6,182,212,0.15); color: #22D3EE; border: 1px solid rgba(6,182,212,0.3); }
+.badge-green { background: rgba(16,185,129,0.15); color: #10B981; border: 1px solid rgba(16,185,129,0.3); }
+.badge-orange { background: rgba(255,154,134,0.15); color: #FF9A86; border: 1px solid rgba(255,154,134,0.3); }
+.badge-cyan { background: rgba(6,182,212,0.15); color: #06B6D4; border: 1px solid rgba(6,182,212,0.3); }
 
 select, input {
   background: var(--bg-input);
